@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Home Server Interface</title>
     <style>
@@ -11,6 +11,7 @@
             text-align: center;
             padding-top: 50px;
         }
+
         .container {
             margin: 0 auto;
             padding: 20px;
@@ -18,20 +19,24 @@
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             max-width: 600px;
         }
+
         input, button {
             padding: 10px;
             margin: 10px;
             font-size: 16px;
         }
+
         button {
             background-color: #007BFF;
             color: #fff;
             border: none;
             cursor: pointer;
         }
-        button:hover {
-            background-color: #0056b3;
-        }
+
+            button:hover {
+                background-color: #0056b3;
+            }
+
         .response {
             margin-top: 20px;
         }
@@ -47,20 +52,21 @@
     <script>
         function sendRequest() {
             var userInput = document.getElementById('userInput').value;
-            fetch('https://87.158.129.147:1023/process', {
+            fetch('https://80.131.121.252:5000/ai', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ input: userInput })
+                body: JSON.stringify({ messages: [{ role: "user", content: userInput }] })
             })
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById('response').innerHTML = data.message;
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            });
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('response').innerHTML = data.response;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    document.getElementById('response').innerHTML = "An error occurred while processing your request.";
+                });
         }
     </script>
 </body>
