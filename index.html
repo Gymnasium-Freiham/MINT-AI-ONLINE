@@ -53,7 +53,7 @@
     <script>
         function sendRequest() {
             var userInput = document.getElementById('userInput').value;
-            fetch('https://api-mintai.ddns.net/ai', {
+            fetch('https://api-mintai.ddns.net:5000/ai', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
