@@ -1,24 +1,31 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Server Status</title>
+    <title>Server Status Check</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             background-color: #f0f0f0;
-            color: #333;
             display: flex;
-            flex-direction: column;
-            align-items: center;
             justify-content: center;
+            align-items: center;
             height: 100vh;
             margin: 0;
         }
 
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
         h1 {
-            color: #4CAF50;
+            color: #333;
+            font-size: 24px;
+            margin-bottom: 20px;
         }
 
         .server-status {
@@ -27,8 +34,6 @@
             border-radius: 5px;
             background-color: #fff;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            width: 80%;
-            max-width: 600px;
             text-align: center;
         }
 
@@ -39,61 +44,62 @@
             .server-status.unavailable {
                 border-left: 5px solid #f44336;
             }
-
-            .server-status.maintenance {
-                border-left: 5px solid #ff9800;
-            }
     </style>
 </head>
 <body>
-    <h1>Server Status</h1>
-    <div id="results"></div>
-
-    <script>const servers = [
-            { name: 'API', url: 'api-mintai.ddns.net', port: 5000 },
-            { name: 'API Interface', url: 'api-mintai.ddns.net', port: 443 },
-            { name: 'Minecraft Java Server', url: 'api-mintai.ddns.net', port: 25565 },
-            { name: 'Minecraft GeyserMC Bedrock/Java Server', url: 'api-mintai.ddns.net', port: 19132 }
+    <div class="container">
+        <h1>Server Status Check</h1>
+        <div id="results"></div>
+    </div>
+    <script>
+        const servers = [
+            { name: 'API Server (5000)', url: 'api-mintai.ddns.net', port: 5000, protocol: 'https' },
+            { name: 'API Server (443)', url: 'api-mintai.ddns.net', port: 443, protocol: 'https' },
+            { name: 'Minecraft Java Server', url: 'api-mintai.ddns.net', port: 25565, protocol: 'mcstatus' },
+            { name: 'Minecraft Bedrock Server', url: 'api-mintai.ddns.net', port: 19132, protocol: 'linked' }
         ];
 
-        async function fetchServerStatus() {
+        async function checkServer(server) {
             try {
-                const response = await fetch('http://api-mintai.ddns.net:3043/get_status');
-                const status = await response.json();
-                displayResults(status);
-            } catch (error) {
-                displayMaintenanceMode();
-            }
-        }
-
-        function displayResults(status) {
-            const resultsDiv = document.getElementById('results');
-            resultsDiv.innerHTML = '';
-            for (const [name, info] of Object.entries(status)) {
-                const statusDiv = document.createElement('div');
-                statusDiv.className = 'server-status';
-                if (info.maintenance) {
-                    statusDiv.classList.add('maintenance');
-                    statusDiv.innerHTML = `${name} (${info.host}:${info.port}) ist im Wartungsmodus.`;
-                } else {
-                    statusDiv.classList.add('available');
-                    statusDiv.innerHTML = `${name} (${info.host}:${info.port}) ist verf�gbar.`;
+                if (server.protocol === 'https') {
+                    const start = Date.now();
+                    const response = await fetch(`https://${server.url}:${server.port}`, { mode: 'no-cors' });
+                    const ping = Date.now() - start;
+                    displayResult(server, ping, response.ok || response.type === 'opaque');
+                } else if (server.protocol === 'mcstatus') {
+                    const response = await fetch(`https://api.mcstatus.io/v2/status/java/${server.url}:${server.port}`);
+                    const data = await response.json();
+                    const isAvailable = data.online;
+                    displayResult(server, 0, isAvailable);
+                    // If Java is available, assume Bedrock is available
+                    if (isAvailable) {
+                        markBedrockAsAvailable();
+                    }
                 }
-                resultsDiv.appendChild(statusDiv);
+            } catch {
+                displayResult(server, null, false);
             }
         }
 
-        function displayMaintenanceMode() {
-            const resultsDiv = document.getElementById('results');
-            resultsDiv.innerHTML = '';
-            servers.forEach(server => {
-                const statusDiv = document.createElement('div');
-                statusDiv.className = 'server-status maintenance';
-                statusDiv.innerHTML = `${server.name} (${server.url}:${server.port}) ist im Wartungsmodus.`;
-                resultsDiv.appendChild(statusDiv);
-            });
+        function markBedrockAsAvailable() {
+            const bedrockServer = servers.find(server => server.protocol === 'linked');
+            if (bedrockServer) {
+                displayResult(bedrockServer, 0, true);
+            }
         }
 
-        fetchServerStatus();</script>
+        function displayResult(server, ping, isAvailable) {
+            const resultsDiv = document.getElementById('results');
+            const statusDiv = document.createElement('div');
+            statusDiv.className = 'server-status';
+            statusDiv.classList.add(isAvailable ? 'available' : 'unavailable');
+            statusDiv.textContent = isAvailable
+                ? `${server.name} (${server.url}:${server.port}) ist verfügbar.`
+                : `${server.name} (${server.url}:${server.port}) ist nicht verfügbar.`;
+            resultsDiv.appendChild(statusDiv);
+        }
+
+        servers.forEach(server => checkServer(server));
+    </script>
 </body>
 </html>
