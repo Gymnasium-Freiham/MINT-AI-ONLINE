@@ -3,26 +3,46 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home Server Interface</title>
+    <title>MINT-AI Chat</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             background-color: #f0f0f0;
-            text-align: center;
-            padding-top: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
         }
 
         .container {
-            margin: 0 auto;
-            padding: 20px;
             background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             max-width: 600px;
+            width: 100%;
         }
 
-        input, button {
+        h1 {
+            color: #333;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 100px;
             padding: 10px;
-            margin: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-bottom: 20px;
             font-size: 16px;
         }
 
@@ -30,7 +50,13 @@
             background-color: #007BFF;
             color: #fff;
             border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 4px;
             cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
             button:hover {
@@ -39,16 +65,28 @@
 
         .response {
             margin-top: 20px;
+            font-size: 16px;
+            color: #333;
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>MINT AI</h1>
-        <p>If you want to know if the AI and/or the API is online go to<a href="https://gymnasium-freiham.github.io/MINT-AI-ONLINE/endpoint.htmle</a></p>
-        <input type="text" id="userInput" placeholder="Enter your request">
-        <button onclick="sendRequest()">Send</button>
+        <h1>MINT-AI Chat</h1>
         <div class="response" id="response"></div>
+        <br />
+        <label for="userInput">Your Message</label>
+        <textarea id="userInput" placeholder="Type your message here..."></textarea>
+        <button onclick="sendRequest()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-send" viewBox="0 0 16 16">
+                <path d="M15.854.146a.5.5 0 0 0-.683-.183L.646 7.146a.5.5 0 0 0 .037.91l4.898 1.633 1.633 4.898a.5.5 0 0 0 .91.037l7.183-14.525a.5.5 0 0 0-.183-.683zM6.5 10.5L1.5 9l10-4.5L6.5 10.5zm.634 1.634L9 14.5l-1.134-3.866L14.5 2.5l-7.366 9.634z" />
+            </svg>
+            &nbsp; Send Message
+        </button>
     </div>
     <script>
         function sendRequest() {
@@ -62,7 +100,7 @@
             })
                 .then(response => response.json())
                 .then(data => {
-                    document.getElementById('response').innerHTML = data.response;
+                    document.getElementById('response').innerHTML = `<strong>Response:</strong><br>${data.response}`;
                 })
                 .catch(error => {
                     console.error('Error:', error);
@@ -72,3 +110,5 @@
     </script>
 </body>
 </html>
+
+
