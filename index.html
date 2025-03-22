@@ -71,6 +71,20 @@
             padding: 10px;
             border-radius: 4px;
             border: 1px solid #ccc;
+            display: none;
+        }
+
+        .history {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #333;
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            max-height: 200px;
+            overflow-y: auto;
+            display: none;
         }
     </style>
 </head>
@@ -87,8 +101,14 @@
             </svg>
             &nbsp; Send Message
         </button>
+        <br />
+        <label for="toggleHistory">Show History</label>
+        <input type="checkbox" id="toggleHistory" onclick="toggleHistory()">
+        <div class="history" id="history"></div>
     </div>
     <script>
+        let messageHistory = [];
+
         function sendRequest() {
             var userInput = document.getElementById('userInput').value;
             fetch('https://api-mintai.ddns.net:5000/ai', {
@@ -100,12 +120,50 @@
             })
                 .then(response => response.json())
                 .then(data => {
-                    document.getElementById('response').innerHTML = `<strong>Response:</strong><br>${data.response}`;
+                    var formattedResponse = formatResponse(data.response);
+                    document.getElementById('response').innerHTML = `<strong>Response:</strong><br>${formattedResponse}`;
+                    document.getElementById('response').style.display = 'block';
+                    updateHistory(userInput, formattedResponse);
                 })
                 .catch(error => {
                     console.error('Error:', error);
                     document.getElementById('response').innerHTML = "An error occurred while processing your request.";
+                    document.getElementById('response').style.display = 'block';
                 });
+        }
+
+        function formatResponse(response) {
+            response = response.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            response = response.replace(/\*(.*?)\*/g, '<em>$1</em>');
+            response = response.replace(/(\d+\.\s)/g, '<span style="margin-left: 20px;">$1</span>');
+            return response;
+        }
+
+        function updateHistory(userInput, response) {
+            messageHistory.push({ user: userInput, response: response });
+            let historyDiv = document.getElementById('history');
+            if (document.getElementById('toggleHistory').checked) {
+                historyDiv.style.display = 'block';
+                historyDiv.innerHTML = '<strong>History:</strong><br>';
+                messageHistory.forEach((msg, index) => {
+                    historyDiv.innerHTML += `<strong>Message ${index + 1}:</strong> ${msg.user}<br><strong>Response:</strong> ${msg.response}<br><br>`;
+                });
+            } else {
+                historyDiv.style.display = 'none';
+            }
+        }
+
+        function toggleHistory() {
+            let historyDiv = document.getElementById('history');
+            if (document.getElementById('toggleHistory').checked) {
+                historyDiv.style.display = 'block';
+                historyDiv.innerHTML = '<strong>History:</strong><br>';
+                messageHistory.forEach((msg, index) => {
+                    historyDiv.innerHTML += `<strong>Message ${index + 1}:</strong> ${msg.user}<br><strong>Response:</strong> ${msg.response}<br><br>`;
+                });
+            } else {
+                historyDiv.style.display = 'none';
+            }
         }
     </script>
 </body>
